@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All-in-One Value Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        /* Modern Font Import */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&family=Montserrat:wght@400;500;600&display=swap');
+
+        /* Root Variables for Consistent Styling */
+        :root {
+            --primary-color: #6d28d9;
+            --secondary-color: #ec4899;
+            --accent-color: #a5b4fc;
+            --bg-color: linear-gradient(135deg, #f5f7fa, #e0e7ff);
+            --text-color: #1e293b;
+            --border-radius: 12px;
+            --shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-blur: blur(10px);
+            --transition: all 0.4s ease;
+        }
+
+        /* General Styling */
+        body {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navbar Styling */
+        nav {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar-heading {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff, #f9a8d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            animation: headingFadeIn 1s ease-in;
+        }
+
+        .navbar-heading:hover {
+            transform: scale(1.02);
+        }
+
+        @keyframes headingFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--border-radius);
+            background: rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Main Content */
+        main {
+            padding: 3rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            animation: fadeIn 0.8s ease-in;
+            border: 3px solid transparent;
+            border-image: linear-gradient(45deg, var(--primary-color), var(--secondary-color)) 1;
+            border-radius: var(--border-radius);
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            margin: 2rem;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Home Page Styling */
+        .home-page .tool-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Reduced min width for smaller cards */
+            gap: 1.5rem; /* Reduced gap */
+            margin-bottom: 3rem;
+        }
+
+        .tool-links .tool-card {
+            background: linear-gradient(135deg, #ffffff, #e0e7ff);
+            padding: 1.5rem; /* Reduced padding */
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            border-image: linear-gradient(45deg, var(--primary-color), var(--secondary-color)) 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(109, 40, 217, 0.1), rgba(236, 72, 153, 0.1));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px) rotate(2deg);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .tool-card h3 {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2rem; /* Reduced font size */
+            font-weight: 700;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem; /* Space between icon and text */
+        }
+
+        .tool-card .tool-icon {
+            font-size: 1rem; /* Smaller size for the emoji/icon */
+        }
+
+        .tool-card:hover h3 {
+            color: var(--secondary-color);
+        }
+
+        .home-page .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .tool-page section {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Section Styling */
+        section {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 2px solid transparent;
+            border-image: linear-gradient(45deg, var(--primary-color), var(--secondary-color)) 1;
+            transition: var(--transition);
+        }
+
+        section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        section h2 {
+            margin-top: 0;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Contact Us and About Us Pages */
+        .contact-page, .about-page {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .contact-page form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .contact-page textarea,
+        .contact-page input {
+            padding: 0.8rem;
+            border: 2px solid var(--accent-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            resize: vertical;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8TEM);
+        }
+
+        .contact-page textarea:focus,
+        .contact-page input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.2);
+        }
+
+        /* GDS Converter Specific Styling */
+        .gds-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .gds-container textarea {
+            width: 100%;
+            height: 160px;
+            padding: 0.8rem;
+            font-size: 1rem;
+            border: 2px solid var(--accent-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 1.2rem;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
+            box-sizing: border-box;
+        }
+
+        .gds-container textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.2);
+        }
+
+        .gds-container .button-group {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .gds-container button {
+            flex: 1;
+            min-width: 150px;
+            max-width: 200px;
+        }
+
+        .gds-container table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.2rem;
+        }
+
+        .gds-container th, .gds-container td {
+            border: 2px solid var(--accent-color);
+            padding: 0.8rem;
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .gds-container th {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 600;
+        }
+
+        .gds-container td {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Currency Converter Specific Styling */
+        .currency-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .currency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .currency-grid input,
+        .currency-grid select {
+            width: 100%;
+            padding: 0.8rem;
+            font-size: 1rem;
+            border: 2px solid var(--accent-color);
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
+            box-sizing: border-box;
+        }
+
+        .currency-grid input:focus,
+        .currency-grid select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.2);
+        }
+
+        .currency-container .button-group {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .currency-container button {
+            flex: 1;
+            min-width: 150px;
+            max-width: 200px;
+        }
+
+        .currency-container .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--accent-color);
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        /* Input and Button Styling */
+        input, select {
+            padding: 0.8rem;
+            margin: 0.6rem 0;
+            border: 2px solid var(--accent-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.2);
+        }
+
+        button {
+            padding: 0.8rem 1.6rem;
+            margin: 0.6rem 0.6rem 0.6rem 0;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: var(--transition);
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Clear Button Styling */
+        .clear-button {
+            background: linear-gradient(45deg, #ef4444, #b91c1c);
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.2rem;
+        }
+
+        th, td {
+            border: 2px solid var(--accent-color);
+            padding: 0.8rem;
+            text-align: left;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        th {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 600;
+        }
+
+        td {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Calculator Button Grid */
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.6rem;
+        }
+
+        .calculator-grid button {
+            padding: 1.2rem;
+            font-size: 1.2rem;
+        }
+
+        /* Footer Styling */
+        footer {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            border-top: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem;
+            }
+
+            .navbar-heading {
+                font-size: 1.6rem;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+
+            main {
+                padding: 2rem 1rem;
+                margin: 1rem;
+            }
+
+            section {
+                padding: 1.8rem;
+            }
+
+            .home-page .tool-links {
+                grid-template-columns: 1fr;
+            }
+
+            .home-page .tool-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .gds-container table {
+                font-size: 0.9rem;
+            }
+
+            .gds-container .button-group {
+                flex-direction: column;
+            }
+
+            .gds-container button {
+                max-width: 100%;
+            }
+
+            .currency-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .currency-container .button-group {
+                flex-direction: column;
+            }
+
+            .currency-container button {
+                max-width: 100%;
+            }
+
+            button {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <h1 class="navbar-heading">✨ All-in-One Value Calculator ✨</h1>
+        <div class="nav-links">
+            <a href="#" data-page="home">🏠 Home</a>
+            <a href="#" data-page="percentage">📊 Percentage</a>
+            <a href="#" data-page="vat">💸 VAT Calculator</a>
+            <a href="#" data-page="calculator">🧮 Daily Calc</a>
+            <a href="#" data-page="gds">✈️ GDS Converter</a>
+            <a href="#" data-page="currency">💱 Currency Converter</a>
+            <a href="#" data-page="about">ℹ️ About Us</a>
+            <a href="#" data-page="contact">📬 Contact Us</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Home Page -->
+        <div class="page home-page" id="home-page">
+            <div class="tool-links">
+                <div class="tool-card" onclick="showPage('percentage-page')">
+                    <h3><span class="tool-icon">📊</span> Percentage Calculator</h3>
+                </div>
+                <div class="tool-card" onclick="showPage('vat-page')">
+                    <h3><span class="tool-icon">💸</span> VAT Calculator</h3>
+                </div>
+                <div class="tool-card" onclick="showPage('calculator-page')">
+                    <h3><span class="tool-icon">🧮</span> Daily Calculator</h3>
+                </div>
+                <div class="tool-card" onclick="showPage('gds-page')">
+                    <h3><span class="tool-icon">✈️</span> GDS Itinerary Converter</h3>
+                </div>
+                <div class="tool-card" onclick="showPage('currency-page')">
+                    <h3><span class="tool-icon">💱</span> Currency Converter</h3>
+                </div>
+            </div>
+            <div class="tool-grid">
+                <!-- Percentage Calculator -->
+                <section id="percentage">
+                    <h2>📊 Percentage Calculator</h2>
+                    <input type="number" id="baseValue" placeholder="Enter base value (e.g., 1000)">
+                    <input type="number" id="percentageValue" placeholder="Enter percentage (e.g., 2.5)">
+                    <input type="number" id="extraValue" placeholder="Enter extra value (e.g., 100)">
+                    <button onclick="calculatePercentage()">Calculate Now</button>
+                    <div id="percentageResult"></div>
+                    <table id="percentageTable">
+                        <thead>
+                            <tr>
+                                <th>Step</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <button onclick="copyPercentageTable()">Copy Table</button>
+                    <button class="clear-button" id="clearPercentage" onclick="clearPercentage()">Clear</button>
+                </section>
+
+                <!-- VAT Calculator -->
+                <section id="vat">
+                    <h2>💸 VAT/Tax Calculator</h2>
+                    <input type="number" id="vatValue" placeholder="Enter amount">
+                    <input type="number" id="taxPercentage" placeholder="Enter tax % (default 5% for UAE VAT)">
+                    <select id="vatOperation">
+                        <option value="add">Add Tax</option>
+                        <option value="remove">Remove Tax</option>
+                    </select>
+                    <button onclick="calculateVAT()">Calculate VAT</button>
+                    <div id="vatResult"></div>
+                    <table id="vatTable">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <button onclick="copyVATTable()">Copy Table</button>
+                    <button class="clear-button" id="clearVAT" onclick="clearVAT()">Clear</button>
+                </section>
+
+                <!-- Daily Calculator -->
+                <section id="calculator">
+                    <h2>🧮 All-in-One Calculator</h2>
+                    <input type="text" id="calcDisplay" readonly>
+                    <div class="calculator-grid">
+                        <button onclick="clearDisplay()">C</button>
+                        <button onclick="appendToDisplay('(')">(</button>
+                        <button onclick="appendToDisplay(')')">)</button>
+                        <button onclick="appendToDisplay('/')">/</button>
+                        <button onclick="appendToDisplay('7')">7</button>
+                        <button onclick="appendToDisplay('8')">8</button>
+                        <button onclick="appendToDisplay('9')">9</button>
+                        <button onclick="appendToDisplay('*')">*</button>
+                        <button onclick="appendToDisplay('4')">4</button>
+                        <button onclick="appendToDisplay('5')">5</button>
+                        <button onclick="appendToDisplay('6')">6</button>
+                        <button onclick="appendToDisplay('-')">-</button>
+                        <button onclick="appendToDisplay('1')">1</button>
+                        <button onclick="appendToDisplay('2')">2</button>
+                        <button onclick="appendToDisplay('3')">3</button>
+                        <button onclick="appendToDisplay('+')">+</button>
+                        <button onclick="appendToDisplay('0')">0</button>
+                        <button onclick="appendToDisplay('.')">.</button>
+                        <button onclick="calculateResult()">=</button>
+                        <button onclick="calculateSquareRoot()">√</button>
+                        <button onclick="appendToDisplay('%')">%</button>
+                        <button onclick="memoryStore()">M+</button>
+                        <button onclick="memoryRecall()">MR</button>
+                        <button onclick="memoryClear()">MC</button>
+                    </div>
+                </section>
+
+                <!-- GDS Itinerary to Table Converter -->
+                <section id="gds">
+                    <h2>✈️ GDS Itinerary Converter</h2>
+                    <div class="gds-container">
+                        <textarea id="gdsInput" placeholder="Paste GDS Itinerary here..."></textarea>
+                        <div class="button-group">
+                            <button onclick="convertToTable()">Convert to Table</button>
+                            <button class="clear-button" onclick="clearGDS()">Clear</button>
+                            <button onclick="downloadExcel()">Download Excel</button>
+                            <button onclick="downloadPDF()">Download PDF</button>
+                        </div>
+                        <div id="gdsOutput"></div>
+                    </div>
+                </section>
+
+                <!-- Currency Converter -->
+                <section id="currency">
+                    <h2>💱 Currency Converter</h2>
+                    <div class="currency-container">
+                        <div class="currency-grid">
+                            <input type="number" id="currencyAmount" placeholder="Enter amount">
+                            <select id="sourceCurrency">
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                                <option value="CAD">CAD - Canadian Dollar</option>
+                                <option value="AUD">AUD - Australian Dollar</option>
+                                <option value="CHF">CHF - Swiss Franc</option>
+                                <option value="INR">INR - Indian Rupee</option>
+                                <option value="JPY">JPY - Japanese Yen</option>
+                                <option value="CNY">CNY - Chinese Yuan</option>
+                                <option value="MXN">MXN - Mexican Peso</option>
+                                <option value="AED">AED - UAE Dirham</option>
+                                <option value="BRL">BRL - Brazilian Real</option>
+                            </select>
+                            <select id="targetCurrency">
+                                <option value="USD">USD - US Dollar</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="GBP">GBP - British Pound</option>
+                                <option value="CAD">CAD - Canadian Dollar</option>
+                                <option value="AUD">AUD - Australian Dollar</option>
+                                <option value="CHF">CHF - Swiss Franc</option>
+                                <option value="INR">INR - Indian Rupee</option>
+                                <option value="JPY">JPY - Japanese Yen</option>
+                                <option value="CNY">CNY - Chinese Yuan</option>
+                                <option value="MXN">MXN - Mexican Peso</option>
+                                <option value="AED">AED - UAE Dirham</option>
+                                <option value="BRL">BRL - Brazilian Real</option>
+                            </select>
+                        </div>
+                        <div class="button-group">
+                            <button onclick="convertCurrency()">Convert</button>
+                            <button class="clear-button" onclick="clearCurrency()">Clear</button>
+                        </div>
+                        <div id="currencyResult" class="result"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Percentage Calculator Page -->
+        <div class="page tool-page" id="percentage-page">
+            <section id="percentage-tool">
+                <h2>📊 Percentage Calculator</h2>
+                <input type="number" id="baseValue2" placeholder="Enter base value (e.g., 1000)">
+                <input type="number" id="percentageValue2" placeholder="Enter percentage (e.g., 2.5)">
+                <input type="number" id="extraValue2" placeholder="Enter extra value (e.g., 100)">
+                <button onclick="calculatePercentage2()">Calculate Now</button>
+                <div id="percentageResult2"></div>
+                <table id="percentageTable2">
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <button onclick="copyPercentageTable2()">Copy Table</button>
+                <button class="clear-button" id="clearPercentage2" onclick="clearPercentage2()">Clear</button>
+            </section>
+        </div>
+
+        <!-- VAT Calculator Page -->
+        <div class="page tool-page" id="vat-page">
+            <section id="vat-tool">
+                <h2>💸 VAT/Tax Calculator</h2>
+                <input type="number" id="vatValue2" placeholder="Enter amount">
+                <input type="number" id="taxPercentage2" placeholder="Enter tax % (default 5% for UAE VAT)">
+                <select id="vatOperation2">
+                    <option value="add">Add Tax</option>
+                    <option value="remove">Remove Tax</option>
+                </select>
+                <button onclick="calculateVAT2()">Calculate VAT</button>
+                <div id="vatResult2"></div>
+                <table id="vatTable2">
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <button onclick="copyVATTable2()">Copy Table</button>
+                <button class="clear-button" id="clearVAT2" onclick="clearVAT2()">Clear</button>
+            </section>
+        </div>
+
+        <!-- Daily Calculator Page -->
+        <div class="page tool-page" id="calculator-page">
+            <section id="calculator-tool">
+                <h2>🧮 All-in-One Calculator</h2>
+                <input type="text" id="calcDisplay2" readonly>
+                <div class="calculator-grid">
+                    <button onclick="clearDisplay2()">C</button>
+                    <button onclick="appendToDisplay2('(')">(</button>
+                    <button onclick="appendToDisplay2(')')">)</button>
+                    <button onclick="appendToDisplay2('/')">/</button>
+                    <button onclick="appendToDisplay2('7')">7</button>
+                    <button onclick="appendToDisplay2('8')">8</button>
+                    <button onclick="appendToDisplay2('9')">9</button>
+                    <button onclick="appendToDisplay2('*')">*</button>
+                    <button onclick="appendToDisplay2('4')">4</button>
+                    <button onclick="appendToDisplay2('5')">5</button>
+                    <button onclick="appendToDisplay2('6')">6</button>
+                    <button onclick="appendToDisplay2('-')">-</button>
+                    <button onclick="appendToDisplay2('1')">1</button>
+                    <button onclick="appendToDisplay2('2')">2</button>
+                    <button onclick="appendToDisplay2('3')">3</button>
+                    <button onclick="appendToDisplay2('+')">+</button>
+                    <button onclick="appendToDisplay2('0')">0</button>
+                    <button onclick="appendToDisplay2('.')">.</button>
+                    <button onclick="calculateResult2()">=</button>
+                    <button onclick="calculateSquareRoot2()">√</button>
+                    <button onclick="appendToDisplay2('%')">%</button>
+                    <button onclick="memoryStore2()">M+</button>
+                    <button onclick="memoryRecall2()">MR</button>
+                    <button onclick="memoryClear2()">MC</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- GDS Itinerary to Table Converter Page -->
+        <div class="page tool-page" id="gds-page">
+            <section id="gds-tool">
+                <h2>✈️ GDS Itinerary Converter</h2>
+                <div class="gds-container">
+                    <textarea id="gdsInput2" placeholder="Paste GDS Itinerary here..."></textarea>
+                    <div class="button-group">
+                        <button onclick="convertToTable2()">Convert to Table</button>
+                        <button class="clear-button" onclick="clearGDS2()">Clear</button>
+                        <button onclick="downloadExcel2()">Download Excel</button>
+                        <button onclick="downloadPDF2()">Download PDF</button>
+                    </div>
+                    <div id="gdsOutput2"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Currency Converter Page -->
+        <div class="page tool-page" id="currency-page">
+            <section id="currency-tool">
+                <h2>💱 Currency Converter</h2>
+                <div class="currency-container">
+                    <div class="currency-grid">
+                        <input type="number" id="currencyAmount2" placeholder="Enter amount">
+                        <select id="sourceCurrency2">
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="CAD">CAD - Canadian Dollar</option>
+                            <option value="AUD">AUD - Australian Dollar</option>
+                            <option value="CHF">CHF - Swiss Franc</option>
+                            <option value="INR">INR - Indian Rupee</option>
+                            <option value="JPY">JPY - Japanese Yen</option>
+                            <option value="CNY">CNY - Chinese Yuan</option>
+                            <option value="MXN">MXN - Mexican Peso</option>
+                            <option value="AED">AED - UAE Dirham</option>
+                            <option value="BRL">BRL - Brazilian Real</option>
+                        </select>
+                        <select id="targetCurrency2">
+                            <option value="USD">USD - US Dollar</option>
+                            <option value="EUR">EUR - Euro</option>
+                            <option value="GBP">GBP - British Pound</option>
+                            <option value="CAD">CAD - Canadian Dollar</option>
+                            <option value="AUD">AUD - Australian Dollar</option>
+                            <option value="CHF">CHF - Swiss Franc</option>
+                            <option value="INR">INR - Indian Rupee</option>
+                            <option value="JPY">JPY - Japanese Yen</option>
+                            <option value="CNY">CNY - Chinese Yuan</option>
+                            <option value="MXN">MXN - Mexican Peso</option>
+                            <option value="AED">AED - UAE Dirham</option>
+                            <option value="BRL">BRL - Brazilian Real</option>
+                        </select>
+                    </div>
+                    <div class="button-group">
+                        <button onclick="convertCurrency2()">Convert</button>
+                        <button class="clear-button" onclick="clearCurrency2()">Clear</button>
+                    </div>
+                    <div id="currencyResult2" class="result"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- About Us Page -->
+        <div class="page about-page" id="about-page">
+            <section>
+                <h2>ℹ️ About Us</h2>
+                <p>Welcome to the <strong>All-in-One Value Calculator</strong>! We're your ultimate companion for quick, accurate, and stylish calculations—whether it's UAE VAT, percentages, daily math, GDS itinerary conversion, or worldwide currency conversion. Our mission? To make your financial, mathematical, and travel tasks a breeze with a sleek, user-friendly interface.</p>
+                <p>From calculating taxes to converting currencies, our tools are designed to save time and add a touch of magic to your day. Built with modern tech, this app ensures a seamless experience across all devices. Let’s simplify life, one calculation at a time! ✨</p>
+            </section>
+        </div>
+
+        <!-- Contact Us Page -->
+        <div class="page contact-page" id="contact-page">
+            <section>
+                <h2>📬 Contact Us</h2>
+                <form id="contactForm" onsubmit="submitContactForm(event)">
+                    <input type="text" id="contactName" placeholder="Your Name" required>
+                    <input type="email" id="contactEmail" placeholder="Your Email" required>
+                    <textarea id="contactMessage" placeholder="Your Message" rows="5" required></textarea>
+                    <button type="submit">Send Message</button>
+                </form>
+                <div id="contactResult"></div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 Multi-Tool Web Application. Crafted with 💖 for You.</p>
+    </footer>
+
+    <!-- JavaScript for Functionality -->
+    <script>
+        // Navigation Logic
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = link.getAttribute('data-page') + '-page';
+                showPage(pageId);
+            });
+        });
+
+        // Show Home page by default
+        showPage('home-page');
+
+        // Percentage Calculator (Home Page)
+        function calculatePercentage() {
+            try {
+                const baseValue = parseFloat(document.getElementById('baseValue').value) || 0;
+                const percentageValue = parseFloat(document.getElementById('percentageValue').value) || 0;
+                const extraValue = parseFloat(document.getElementById('extraValue').value) || 0;
+                const percentage = baseValue * (percentageValue / 100);
+                const total = baseValue + percentage;
+                const finalTotal = total + extraValue;
+
+                document.getElementById('percentageResult').innerHTML = `
+                    <p>${baseValue} + ${percentageValue}% = ${total.toFixed(2)}</p>
+                    <p>${total.toFixed(2)} + ${extraValue} = ${finalTotal.toFixed(2)}</p>
+                `;
+
+                const tableBody = document.querySelector('#percentageTable tbody');
+                tableBody.innerHTML = `
+                    <tr><td>Base Value</td><td>${baseValue.toFixed(2)}</td></tr>
+                    <tr><td>+ ${percentageValue}%</td><td>${percentage.toFixed(2)}</td></tr>
+                    <tr><td>Total</td><td>${total.toFixed(2)}</td></tr>
+                    <tr><td>+ Extra</td><td>${extraValue.toFixed(2)}</td></tr>
+                    <tr><td>Final Total</td><td>${finalTotal.toFixed(2)}</td></tr>
+                `;
+
+                document.getElementById('clearPercentage').classList.add('visible');
+            } catch (error) {
+                document.getElementById('percentageResult').innerHTML = '<p>Error in calculation. Please check inputs.</p>';
+            }
+        }
+
+        function copyPercentageTable() {
+            try {
+                const table = document.getElementById('percentageTable');
+                const range = document.createRange();
+                range.selectNode(table);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                alert('Table copied to clipboard!');
+            } catch (error) {
+                alert('Failed to copy table.');
+            }
+        }
+
+        function clearPercentage() {
+            document.getElementById('baseValue').value = '';
+            document.getElementById('percentageValue').value = '';
+            document.getElementById('extraValue').value = '';
+            document.getElementById('percentageResult').innerHTML = '';
+            document.querySelector('#percentageTable tbody').innerHTML = '';
+            document.getElementById('clearPercentage').classList.remove('visible');
+        }
+
+        // Percentage Calculator (Individual Page)
+        function calculatePercentage2() {
+            try {
+                const baseValue = parseFloat(document.getElementById('baseValue2').value) || 0;
+                const percentageValue = parseFloat(document.getElementById('percentageValue2').value) || 0;
+                const extraValue = parseFloat(document.getElementById('extraValue2').value) || 0;
+                const percentage = baseValue * (percentageValue / 100);
+                const total = baseValue + percentage;
+                const finalTotal = total + extraValue;
+
+                document.getElementById('percentageResult2').innerHTML = `
+                    <p>${baseValue} + ${percentageValue}% = ${total.toFixed(2)}</p>
+                    <p>${total.toFixed(2)} + ${extraValue} = ${finalTotal.toFixed(2)}</p>
+                `;
+
+                const tableBody = document.querySelector('#percentageTable2 tbody');
+                tableBody.innerHTML = `
+                    <tr><td>Base Value</td><td>${baseValue.toFixed(2)}</td></tr>
+                    <tr><td>+ ${percentageValue}%</td><td>${percentage.toFixed(2)}</td></tr>
+                    <tr><td>Total</td><td>${total.toFixed(2)}</td></tr>
+                    <tr><td>+ Extra</td><td>${extraValue.toFixed(2)}</td></tr>
+                    <tr><td>Final Total</td><td>${finalTotal.toFixed(2)}</td></tr>
+                `;
+
+                document.getElementById('clearPercentage2').classList.add('visible');
+            } catch (error) {
+                document.getElementById('percentageResult2').innerHTML = '<p>Error in calculation. Please check inputs.</p>';
+            }
+        }
+
+        function copyPercentageTable2() {
+            try {
+                const table = document.getElementById('percentageTable2');
+                const range = document.createRange();
+                range.selectNode(table);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                alert('Table copied to clipboard!');
+            } catch (error) {
+                alert('Failed to copy table.');
+            }
+        }
+
+        function clearPercentage2() {
+            document.getElementById('baseValue2').value = '';
+            document.getElementById('percentageValue2').value = '';
+            document.getElementById('extraValue2').value = '';
+            document.getElementById('percentageResult2').innerHTML = '';
+            document.querySelector('#percentageTable2 tbody').innerHTML = '';
+            document.getElementById('clearPercentage2').classList.remove('visible');
+        }
+
+        // VAT Calculator (Home Page)
+        function calculateVAT() {
+            try {
+                const value = parseFloat(document.getElementById('vatValue').value) || 0;
+                const taxPercentage = parseFloat(document.getElementById('taxPercentage').value) || 5;
+                const operation = document.getElementById('vatOperation').value;
+                let subtotal, vat, finalTotal;
+
+                if (operation === 'add') {
+                    vat = value * (taxPercentage / 100);
+                    finalTotal = value + vat;
+                    subtotal = value;
+                } else {
+                    finalTotal = value;
+                    vat = value * (taxPercentage / (100 + taxPercentage));
+                    subtotal = value - vat;
+                }
+
+                document.getElementById('vatResult').innerHTML = `
+                    <p>Subtotal: ${subtotal.toFixed(2)}</p>
+                    <p>Tax (${taxPercentage}%): ${vat.toFixed(2)}</p>
+                    <p>Final Total: ${finalTotal.toFixed(2)}</p>
+                `;
+
+                const tableBody = document.querySelector('#vatTable tbody');
+                tableBody.innerHTML = `
+                    <tr><td>Subtotal</td><td>${subtotal.toFixed(2)}</td></tr>
+                    <tr><td>Tax (${taxPercentage}%)</td><td>${vat.toFixed(2)}</td></tr>
+                    <tr><td>Final Total</td><td>${finalTotal.toFixed(2)}</td></tr>
+                `;
+
+                document.getElementById('clearVAT').classList.add('visible');
+            } catch (error) {
+                document.getElementById('vatResult').innerHTML = '<p>Error in calculation. Please check inputs.</p>';
+            }
+        }
+
+        function copyVATTable() {
+            try {
+                const table = document.getElementById('vatTable');
+                const range = document.createRange();
+                range.selectNode(table);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                alert('Table copied to clipboard!');
+            } catch (error) {
+                alert('Failed to copy table.');
+            }
+        }
+
+        function clearVAT() {
+            document.getElementById('vatValue').value = '';
+            document.getElementById('taxPercentage').value = '';
+            document.getElementById('vatOperation').value = 'add';
+            document.getElementById('vatResult').innerHTML = '';
+            document.querySelector('#vatTable tbody').innerHTML = '';
+            document.getElementById('clearVAT').classList.remove('visible');
+        }
+
+        // VAT Calculator (Individual Page)
+        function calculateVAT2() {
+            try {
+                const value = parseFloat(document.getElementById('vatValue2').value) || 0;
+                const taxPercentage = parseFloat(document.getElementById('taxPercentage2').value) || 5;
+                const operation = document.getElementById('vatOperation2').value;
+                let subtotal, vat, finalTotal;
+
+                if (operation === 'add') {
+                    vat = value * (taxPercentage / 100);
+                    finalTotal = value + vat;
+                    subtotal = value;
+                } else {
+                    finalTotal = value;
+                    vat = value * (taxPercentage / (100 + taxPercentage));
+                    subtotal = value - vat;
+                }
+
+                document.getElementById('vatResult2').innerHTML = `
+                    <p>Subtotal: ${subtotal.toFixed(2)}</p>
+                    <p>Tax (${taxPercentage}%): ${vat.toFixed(2)}</p>
+                    <p>Final Total: ${finalTotal.toFixed(2)}</p>
+                `;
+
+                const tableBody = document.querySelector('#vatTable2 tbody');
+                tableBody.innerHTML = `
+                    <tr><td>Subtotal</td><td>${subtotal.toFixed(2)}</td></tr>
+                    <tr><td>Tax (${taxPercentage}%)</td><td>${vat.toFixed(2)}</td></tr>
+                    <tr><td>Final Total</td><td>${finalTotal.toFixed(2)}</td></tr>
+                `;
+
+                document.getElementById('clearVAT2').classList.add('visible');
+            } catch (error) {
+                document.getElementById('vatResult2').innerHTML = '<p>Error in calculation. Please check inputs.</p>';
+            }
+        }
+
+        function copyVATTable2() {
+            try {
+                const table = document.getElementById('vatTable2');
+                const range = document.createRange();
+                range.selectNode(table);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                alert('Table copied to clipboard!');
+            } catch (error) {
+                alert('Failed to copy table.');
+            }
+        }
+
+        function clearVAT2() {
+            document.getElementById('vatValue2').value = '';
+            document.getElementById('taxPercentage2').value = '';
+            document.getElementById('vatOperation2').value = 'add';
+            document.getElementById('vatResult2').innerHTML = '';
+            document.querySelector('#vatTable2 tbody').innerHTML = '';
+            document.getElementById('clearVAT2').classList.remove('visible');
+        }
+
+        // Daily Calculator (Home Page)
+        let memory = 0;
+        function appendToDisplay(value) {
+            try {
+                document.getElementById('calcDisplay').value += value;
+            } catch (error) {
+                document.getElementById('calcDisplay').value = 'Error';
+            }
+        }
+
+        function clearDisplay() {
+            document.getElementById('calcDisplay').value = '';
+        }
+
+        function calculateResult() {
+            try {
+                const expression = document.getElementById('calcDisplay').value;
+                if (!expression) {
+                    document.getElementById('calcDisplay').value = '';
+                    return;
+                }
+                if (/^[0-9+\-*/().% ]+$/.test(expression)) {
+                    document.getElementById('calcDisplay').value = eval(expression);
+                } else {
+                    document.getElementById('calcDisplay').value = 'Invalid input';
+                }
+            } catch {
+                document.getElementById('calcDisplay').value = 'Error';
+            }
+        }
+
+        function calculateSquareRoot() {
+            try {
+                const value = parseFloat(document.getElementById('calcDisplay').value);
+                if (isNaN(value) || value < 0) {
+                    document.getElementById('calcDisplay').value = 'Invalid input';
+                    return;
+                }
+                document.getElementById('calcDisplay').value = Math.sqrt(value);
+            } catch {
+                document.getElementById('calcDisplay').value = 'Error';
+            }
+        }
+
+        function memoryStore() {
+            try {
+                memory = parseFloat(document.getElementById('calcDisplay').value) || 0;
+            } catch {
+                memory = 0;
+            }
+        }
+
+        function memoryRecall() {
+            document.getElementById('calcDisplay').value = memory;
+        }
+
+        function memoryClear() {
+            memory = 0;
+        }
+
+        // Daily Calculator (Individual Page)
+        let memory2 = 0;
+        function appendToDisplay2(value) {
+            try {
+                document.getElementById('calcDisplay2').value += value;
+            } catch (error) {
+                document.getElementById('calcDisplay2').value = 'Error';
+            }
+        }
+
+        function clearDisplay2() {
+            document.getElementById('calcDisplay2').value = '';
+        }
+
+        function calculateResult2() {
+            try {
+                const expression = document.getElementById('calcDisplay2').value;
+                if (!expression) {
+                    document.getElementById('calcDisplay2').value = '';
+                    return;
+                }
+                if (/^[0-9+\-*/().% ]+$/.test(expression)) {
+                    document.getElementById('calcDisplay2').value = eval(expression);
+                } else {
+                    document.getElementById('calcDisplay2').value = 'Invalid input';
+                }
+            } catch {
+                document.getElementById('calcDisplay2').value = 'Error';
+            }
+        }
+
+        function calculateSquareRoot2() {
+            try {
+                const value = parseFloat(document.getElementById('calcDisplay2').value);
+                if (isNaN(value) || value < 0) {
+                    document.getElementById('calcDisplay2').value = 'Invalid input';
+                    return;
+                }
+                document.getElementById('calcDisplay2').value = Math.sqrt(value);
+            } catch {
+                document.getElementById('calcDisplay2').value = 'Error';
+            }
+        }
+
+        function memoryStore2() {
+            try {
+                memory2 = parseFloat(document.getElementById('calcDisplay2').value) || 0;
+            } catch {
+                memory2 = 0;
+            }
+        }
+
+        function memoryRecall2() {
+            document.getElementById('calcDisplay2').value = memory2;
+        }
+
+        function memoryClear2() {
+            memory2 = 0;
+        }
+
+        // GDS Itinerary to Table Converter (Home Page)
+        let gdsData = [];
+        const airlineNames = {
+            TK: "Turkish Airlines", EK: "Emirates", QR: "Qatar Airways",
+            LH: "Lufthansa", BA: "British Airways", AI: "Air India",
+            AF: "Air France", CZ: "China Southern", KL: "KLM Royal Dutch Airlines",
+            CX: "Cathay Pacific", SQ: "Singapore Airlines", QF: "Qantas", NH: "All Nippon Airways",
+            JL: "Japan Airlines", UA: "United Airlines", AA: "American Airlines", DL: "Delta Air Lines",
+            AC: "Air Canada", EY: "Etihad Airways", OS: "Austrian Airlines", AZ: "ITA Airways",
+            SK: "Scandinavian Airlines", IB: "Iberia", SU: "Aeroflot",
+            ET: "Ethiopian Airlines", SV: "Saudia", RJ: "Royal Jordanian", ME: "Middle East Airlines",
+            MS: "EgyptAir", GF: "Gulf Air", VN: "Vietnam Airlines", MH: "Malaysia Airlines", TG: "Thai Airways", KE: "Korean Air", BR: "EVA Air", AR: "Aerolineas Argentinas", LA: "LATAM Airlines", CM: "Copa Airlines", AV: "Avianca", NZ: "Air New Zealand",
+            FI: "Icelandair", LO: "LOT Polish Airlines", OK: "Czech Airlines", PS: "Ukraine International Airlines", HU: "Hainan Airlines", CA: "Air China", MU: "China Eastern"
+        };
+
+        const airportNames = {
+            IST: "Istanbul Airport", BSR: "Basrah Airport", BEG: "Belgrade Airport",
+            DEL: "Delhi Airport", DXB: "Dubai International Airport", LHR: "London Heathrow",
+            DOH: "Hamad International Airport", LHE: "Allama Iqbal Intl", KHI: "Jinnah Intl",
+            ORD: "O'Hare International"
+        };
+
+        const monthMap = {
+            JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
+            JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11
+        };
+
+        function convertClass(code) {
+            if (["Y", "M", "V", "L", "Q", "K", "U", "B", "O", "X", "R", "N", "S", "T", "W", "E", "H"].includes(code)) return "Economy";
+            if (["J", "C"].includes(code)) return "Business";
+            if (["F"].includes(code)) return "First";
+            return code;
+        }
+
+        function formatTime(time) {
+            if (!time || time.length < 3) return time;
+            const hours = parseInt(time.substring(0, 2));
+            const minutes = time.substring(2);
+            const suffix = hours >= 12 ? "pm" : "am";
+            const formattedHour = ((hours + 11) % 12 + 1);
+            return `${formattedHour}:${minutes} ${suffix}`;
+        }
+
+        function formatFullDate(gdsDate) {
+            const day = gdsDate.substring(0, 2);
+            const monthStr = gdsDate.substring(2, 5).toUpperCase();
+            const year = new Date().getFullYear();
+            const month = monthMap[monthStr];
+            const dateObj = new Date(year, month, parseInt(day));
+            const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+            const monthName = dateObj.toLocaleDateString('en-US', { month: 'short' });
+            return `${dayOfWeek}, ${day} ${monthName}`;
+        }
+
+        function convertToTable() {
+            const input = document.getElementById("gdsInput").value.trim();
+            if (!input) {
+                document.getElementById("gdsOutput").innerHTML = "<p>Please enter GDS itinerary data.</p>";
+                return;
+            }
+
+            const lines = input.split("\n");
+            gdsData = [];
+            let tableHTML = `
+                <table id="gdsTable">
+                    <tr>
+                        <th>Airline</th>
+                        <th>Flight No.</th>
+                        <th>Class</th>
+                        <th>Date</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Dep Time</th>
+                        <th>Arr Time</th>
+                        <th>Status</th>
+                        <th>Aircraft</th>
+                    </tr>
+            `;
+
+            let hasValidData = false;
+
+            lines.forEach((line, index) => {
+                if (!line.trim()) return; // Skip empty lines
+                const parts = line.trim().split(/\s+/);
+                console.log(`Line ${index + 1} parts:`, parts); // Debug log
+
+                // Require at least 8 parts: airline, flight no, class, date, route, status, dep time, arr time
+                if (parts.length >= 8) {
+                    try {
+                        const airlineCode = parts[0];
+                        const airline = airlineNames[airlineCode] || airlineCode;
+                        const flightNo = parts[1];
+                        const cls = convertClass(parts[2]);
+                        const formattedDate = formatFullDate(parts[3]);
+                        const routeStr = parts[4];
+                        const fromCode = routeStr.slice(0, 3).toUpperCase();
+                        const toCode = routeStr.slice(3, 6).toUpperCase();
+                        const from = airportNames[fromCode] ? `${fromCode} - ${airportNames[fromCode]}` : fromCode;
+                        const to = airportNames[toCode] ? `${toCode} - ${airportNames[toCode]}` : toCode;
+                        const status = parts[5];
+                        const depTime = formatTime(parts[6]);
+                        const arrTime = formatTime(parts[7]);
+                        const aircraft = parts[8] || ""; // Aircraft is optional
+
+                        gdsData.push([airline, flightNo, cls, formattedDate, from, to, depTime, arrTime, status, aircraft]);
+
+                        tableHTML += `
+                            <tr>
+                                <td>${airline}</td>
+                                <td>${flightNo}</td>
+                                <td>${cls}</td>
+                                <td>${formattedDate}</td>
+                                <td>${from}</td>
+                                <td>${to}</td>
+                                <td>${depTime}</td>
+                                <td>${arrTime}</td>
+                                <td>${status}</td>
+                                <td>${aircraft}</td>
+                            </tr>
+                        `;
+                        hasValidData = true;
+                    } catch (error) {
+                        console.error(`Error processing line ${index + 1}:`, error);
+                    }
+                } else {
+                    console.warn(`Line ${index + 1} has insufficient parts:`, parts);
+                }
+            });
+
+            tableHTML += "</table>";
+
+            if (hasValidData) {
+                document.getElementById("gdsOutput").innerHTML = tableHTML;
+            } else {
+                document.getElementById("gdsOutput").innerHTML = "<p>No valid GDS itinerary data found. Please check the format.</p>";
+            }
+        }
+
+        function clearGDS() {
+            document.getElementById("gdsInput").value = "";
+            document.getElementById("gdsOutput").innerHTML = "";
+            gdsData = [];
+        }
+
+        function downloadExcel() {
+            if (!gdsData.length) return alert("Convert data first.");
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([
+                ["Airline", "Flight No.", "Class", "Date", "From", "To", "Dep Time", "Arr Time", "Status", "Aircraft"],
+                ...gdsData
+            ]);
+            XLSX.utils.book_append_sheet(wb, ws, "Itinerary");
+            XLSX.writeFile(wb, "Itinerary.xlsx");
+        }
+
+        function downloadPDF() {
+            if (!gdsData.length) return alert("Convert data first.");
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("GDS Itinerary", 14, 15);
+            const headers = ["Airline", "Flight No.", " clase", "Date", "From", "To", "Dep", "Arr", "Status", "Aircraft"];
+            doc.autoTable({ startY: 20, head: [headers], body: gdsData });
+            doc.save("Itinerary.pdf");
+        }
+
+        // GDS Itinerary to Table Converter (Individual Page)
+        let gdsData2 = [];
+        function convertToTable2() {
+            const input = document.getElementById("gdsInput2").value.trim();
+            if (!input) {
+                document.getElementById("gdsOutput2").innerHTML = "<p>Please enter GDS itinerary data.</p>";
+                return;
+            }
+
+            const lines = input.split("\n");
+            gdsData2 = [];
+            let tableHTML = `
+                <table id="gdsTable2">
+                    <tr>
+                        <th>Airline</th>
+                        <th>Flight No.</th>
+                        <th>Class</th>
+                        <th>Date</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Dep Time</th>
+                        <th>Arr Time</th>
+                        <th>Status</th>
+                        <th>Aircraft</th>
+                    </tr>
+            `;
+
+            let hasValidData = false;
+
+            lines.forEach((line, index) => {
+                if (!line.trim()) return; // Skip empty lines
+                const parts = line.trim().split(/\s+/);
+                console.log(`Line ${index + 1} parts:`, parts); // Debug log
+
+                if (parts.length >= 8) {
+                    try {
+                        const airlineCode = parts[0];
+                        const airline = airlineNames[airlineCode] || airlineCode;
+                        const flightNo = parts[1];
+                        const cls = convertClass(parts[2]);
+                        const formattedDate = formatFullDate(parts[3]);
+                        const routeStr = parts[4];
+                        const fromCode = routeStr.slice(0, 3).toUpperCase();
+                        const toCode = routeStr.slice(3, 6).toUpperCase();
+                        const from = airportNames[fromCode] ? `${fromCode} - ${airportNames[fromCode]}` : fromCode;
+                        const to = airportNames[toCode] ? `${toCode} - ${airportNames[toCode]}` : toCode;
+                        const status = parts[5];
+                        const depTime = formatTime(parts[6]);
+                        const arrTime = formatTime(parts[7]);
+                        const aircraft = parts[8] || "";
+
+                        gdsData2.push([airline, flightNo, cls, formattedDate, from, to, depTime, arrTime, status, aircraft]);
+
+                        tableHTML += `
+                            <tr>
+                                <td>${airline}</td>
+                                <td>${flightNo}</td>
+                                <td>${cls}</td>
+                                <td>${formattedDate}</td>
+                                <td>${from}</td>
+                                <td>${to}</td>
+                                <td>${depTime}</td>
+                                <td>${arrTime}</td>
+                                <td>${status}</td>
+                                <td>${aircraft}</td>
+                            </tr>
+                        `;
+                        hasValidData = true;
+                    } catch (error) {
+                        console.error(`Error processing line ${index + 1}:`, error);
+                    }
+                } else {
+                    console.warn(`Line ${index + 1} has insufficient parts:`, parts);
+                }
+            });
+
+            tableHTML += "</table>";
+
+            if (hasValidData) {
+                document.getElementById("gdsOutput2").innerHTML = tableHTML;
+            } else {
+                document.getElementById("gdsOutput2").innerHTML = "<p>No valid GDS itinerary data found. Please check the format.</p>";
+            }
+        }
+
+        function clearGDS2() {
+            document.getElementById("gdsInput2").value = "";
+            document.getElementById("gdsOutput2").innerHTML = "";
+            gdsData2 = [];
+        }
+
+        function downloadExcel2() {
+            if (!gdsData2.length) return alert("Convert data first.");
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([
+                ["Airline", "Flight No.", "Class", "Date", "From", "To", "Dep Time", "Arr Time", "Status", "Aircraft"],
+                ...gdsData2
+            ]);
+            XLSX.utils.book_append_sheet(wb, ws, "Itinerary");
+            XLSX.writeFile(wb, "Itinerary.xlsx");
+        }
+
+        function downloadPDF2() {
+            if (!gdsData2.length) return alert("Convert data first.");
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("GDS Itinerary", 14, 15);
+            const headers = ["Airline", "Flight No.", "Class", "Date", "From", "To", "Dep", "Arr", "Status", "Aircraft"];
+            doc.autoTable({ startY: 20, head: [headers], body: gdsData2 });
+            doc.save("Itinerary.pdf");
+        }
+
+        // Currency Converter (Home Page)
+        const exchangeRates = {
+            USD: 1,
+            EUR: 0.806942,
+            GBP: 0.719154,
+            CAD: 1.260046,
+            CHF: 0.933058,
+            // Rates below are estimated based on historical trends and typical values relative to USD
+            AUD: 1.35,  // Estimated, typically around 1.3-1.4 USD
+            INR: 83.50, // Estimated, typically around 80-85 USD
+            JPY: 150.00, // Estimated, typically around 140-160 USD
+            CNY: 7.20,  // Estimated, typically around 7-7.3 USD
+            MXN: 20.00, // Estimated, typically around 18-22 USD
+            AED: 3.6725, // Fixed peg to USD
+            BRL: 5.50   // Estimated, typically around 5-6 USD
+        };
+
+        function convertCurrency() {
+            try {
+                const amount = parseFloat(document.getElementById('currencyAmount').value) || 0;
+                const sourceCurrency = document.getElementById('sourceCurrency').value;
+                const targetCurrency = document.getElementById('targetCurrency').value;
+
+                if (amount <= 0) {
+                    document.getElementById('currencyResult').innerHTML = '<p>Please enter a positive amount.</p>';
+                    return;
+                }
+
+                if (sourceCurrency === targetCurrency) {
+                    document.getElementById('currencyResult').innerHTML = `<p>${amount.toFixed(2)} ${sourceCurrency} = ${amount.toFixed(2)} ${targetCurrency}</p>`;
+                    return;
+                }
+
+                // Convert source to USD, then USD to target
+                const sourceToUSD = amount / exchangeRates[sourceCurrency];
+                const convertedAmount = sourceToUSD * exchangeRates[targetCurrency];
+                const rate = exchangeRates[targetCurrency] / exchangeRates[sourceCurrency];
+
+                document.getElementById('currencyResult').innerHTML = `
+                    <p>${amount.toFixed(2)} ${sourceCurrency} = ${convertedAmount.toFixed(2)} ${targetCurrency}</p>
+                    <p>Exchange Rate: 1 ${sourceCurrency} = ${rate.toFixed(4)} ${targetCurrency}</p>
+                    <p><small>Note: Rates are based on mid-market data as of April 29, 2025, and may vary slightly.</small></p>
+                `;
+            } catch (error) {
+                document.getElementById('currencyResult').innerHTML = '<p>Error in conversion. Please check inputs.</p>';
+            }
+        }
+
+        function clearCurrency() {
+            document.getElementById('currencyAmount').value = '';
+            document.getElementById('sourceCurrency').value = 'USD';
+            document.getElementById('targetCurrency').value = 'USD';
+            document.getElementById('currencyResult').innerHTML = '';
+        }
+
+        // Currency Converter (Individual Page)
+        function convertCurrency2() {
+            try {
+                const amount = parseFloat(document.getElementById('currencyAmount2').value) || 0;
+                const sourceCurrency = document.getElementById('sourceCurrency2').value;
+                const targetCurrency = document.getElementById('targetCurrency2').value;
+
+                if (amount <= 0) {
+                    document.getElementById('currencyResult2').innerHTML = '<p>Please enter a positive amount.</p>';
+                    return;
+                }
+
+                if (sourceCurrency === targetCurrency) {
+                    document.getElementById('currencyResult2').innerHTML = `<p>${amount.toFixed(2)} ${sourceCurrency} = ${amount.toFixed(2)} ${targetCurrency}</p>`;
+                    return;
+                }
+
+                // Convert source to USD, then USD to target
+                const sourceToUSD = amount / exchangeRates[sourceCurrency];
+                const convertedAmount = sourceToUSD * exchangeRates[targetCurrency];
+                const rate = exchangeRates[targetCurrency] / exchangeRates[sourceCurrency];
+
+                document.getElementById('currencyResult2').innerHTML = `
+                    <p>${amount.toFixed(2)} ${sourceCurrency} = ${convertedAmount.toFixed(2)} ${targetCurrency}</p>
+                    <p>Exchange Rate: 1 ${sourceCurrency} = ${rate.toFixed(4)} ${targetCurrency}</p>
+                    <p><small>Note: Rates are based on mid-market data as of April 29, 2025, and may vary slightly.</small></p>
+                `;
+            } catch (error) {
+                document.getElementById('currencyResult2').innerHTML = '<p>Error in conversion. Please check inputs.</p>';
+            }
+        }
+
+        function clearCurrency2() {
+            document.getElementById('currencyAmount2').value = '';
+            document.getElementById('sourceCurrency2').value = 'USD';
+            document.getElementById('targetCurrency2').value = 'USD';
+            document.getElementById('currencyResult2').innerHTML = '';
+        }
+
+        // Contact Form Submission
+        function submitContactForm(event) {
+            event.preventDefault();
+            const name = document.getElementById('contactName').value;
+            const email = document.getElementById('contactEmail').value;
+            const message = document.getElementById('contactMessage').value;
+
+            document.getElementById('contactResult').innerHTML = `<p>Thank you, ${name}! Your message has been received.</p>`;
+            document.getElementById('contactForm').reset();
+        }
+    </script>
+</body>
+</html>
